@@ -11,26 +11,26 @@ import java.util.concurrent.Executors;
 @EnableAsync
 public class ThreadPoolConfig {
 
-    private static final int MAX_THREADS = 10; // Maksimum 10 dosya desteği
+    private static final int MAX_THREADS = 10; // Supports up to 10 files
     private static final String ANALYZE_THREAD_NAME_PREFIX = "FileAnalysis-";
     private static final String ARCHIVE_THREAD_NAME_PREFIX = "Archive-";
 
     /**
-     * Dosya analizi için ExecutorService bean'i
-     * Maksimum 10 dosya desteği ile cached thread pool kullanır
+     * ExecutorService bean for file analysis
+     * Uses a fixed thread pool with support for up to 10 files
      */
     @Bean(name = "fileAnalysisExecutor")
     public ExecutorService fileAnalysisExecutor() {
         return Executors.newFixedThreadPool(MAX_THREADS, r -> {
             Thread thread = new Thread(r);
             thread.setName(ANALYZE_THREAD_NAME_PREFIX + thread.getId());
-            thread.setDaemon(false); // Ana thread beklesin
+            thread.setDaemon(false); // Let the main thread wait
             return thread;
         });
     }
 
     /**
-     * Arşivleme işlemi için tek thread'li ExecutorService
+     * Single-threaded ExecutorService for archiving operations
      */
     @Bean(name = "archiveExecutor")
     public ExecutorService archiveExecutor() {
@@ -43,7 +43,7 @@ public class ThreadPoolConfig {
     }
 
     /**
-     * Genel amaçlı cached thread pool
+     * General-purpose cached thread pool
      */
     @Bean(name = "generalExecutor")
     public ExecutorService generalExecutor() {
