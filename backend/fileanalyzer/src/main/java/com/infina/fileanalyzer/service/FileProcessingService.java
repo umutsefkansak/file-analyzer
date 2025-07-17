@@ -2,13 +2,14 @@ package com.infina.fileanalyzer.service;
 
 import com.infina.fileanalyzer.entity.FileStats;
 import com.infina.fileanalyzer.service.abstracts.IFileProcessingService;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.concurrent.Callable;
-
+@Service
 public class FileProcessingService implements IFileProcessingService {
 
     /**
