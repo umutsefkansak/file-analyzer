@@ -1,6 +1,7 @@
 package com.infina.fileanalyzer.service;
 
 import com.infina.fileanalyzer.entity.FileStats;
+import com.infina.fileanalyzer.service.abstracts.IFileProcessingService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,7 +9,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.concurrent.Callable;
 
-public class FileProcessingService {
+public class FileProcessingService implements IFileProcessingService {
 
     /**
      * Calculates the line and character count for the given file,

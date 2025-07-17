@@ -1,6 +1,7 @@
 package com.infina.fileanalyzer.service;
 
 import com.infina.fileanalyzer.entity.ArchiveInfo;
+import com.infina.fileanalyzer.service.abstracts.IArchvieService;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -17,7 +18,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 @Service
-public class ArchiveService {
+public class ArchiveService implements IArchvieService {
 
     public ArchiveInfo createArchive(String inputDirectory, String outputZipPath){
         ArchiveInfo archiveInfo = new ArchiveInfo();
