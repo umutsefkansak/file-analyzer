@@ -4,9 +4,7 @@ import com.infina.fileanalyzer.entity.ArchiveInfo;
 import com.infina.fileanalyzer.service.abstracts.IArchvieService;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 @Service
@@ -74,8 +73,38 @@ public class ArchiveService implements IArchvieService {
         }
         return txtFiles;
     }
+    public void unzip(String zipFilePath, String destDirectory) throws IOException{
+        File theDestDirectory = new File(destDirectory);
+        if (!theDestDirectory.exists()){
+            theDestDirectory.mkdirs();
+        }
+        try (ZipInputStream zipInput = new ZipInputStream(new FileInputStream(zipFilePath))){
+            ZipEntry entry = zipInput.getNextEntry();
+            while (entry != null){
+                String filePath = destDirectory + File.separator + entry.getName();
+                if (!entry.isDirectory()){
+                    extractFile(zipInput, filePath);
+                } else {
+                    File directory = new File(filePath);
+                    directory.mkdirs();
+                }
+                zipInput.closeEntry();
+                entry = zipInput.getNextEntry();
+            }
+        }
+        System.out.println("Unzip process completed: "+ destDirectory);
+    }
+    private void extractFile(ZipInputStream zipInput, String filePath) throws IOException{
+        int BUFFER_SIZE = 4096;
+        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(filePath))){
+                byte[] bytesIn = new byte[BUFFER_SIZE];
+                int read;
+                while ((read = zipInput.read(bytesIn)) != -1){
+                    bufferedOutputStream.write(bytesIn, 0, read);
+            }
+        }
+    }
 
-    //optional
     public void deleteSourceFiles(List<Path> files){
         for (Path file : files){
             try{
