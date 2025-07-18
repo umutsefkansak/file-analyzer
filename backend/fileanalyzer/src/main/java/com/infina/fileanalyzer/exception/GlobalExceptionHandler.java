@@ -10,6 +10,7 @@ import com.infina.fileanalyzer.exception.file.FileAnalyzerException;
 import com.infina.fileanalyzer.exception.file.FileNotFoundException;
 import com.infina.fileanalyzer.exception.file.FileProcessingException;
 import com.infina.fileanalyzer.exception.file.InvalidFileTypeException;
+import com.infina.fileanalyzer.exception.status.NoContentException;
 import com.infina.fileanalyzer.exception.thread.ThreadExecutionException;
 import com.infina.fileanalyzer.exception.thread.ThreadInterruptedException;
 import org.slf4j.Logger;
@@ -150,6 +151,17 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(NoContentException.class)
+    public ResponseEntity<ErrorResponse> handleNoContentException(NoContentException ex, WebRequest request) {
+        logger.warn("No content found: {}", ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.NO_CONTENT.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.NO_CONTENT);
     }
 
     @ExceptionHandler(Exception.class)
