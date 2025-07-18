@@ -4,13 +4,18 @@ import com.infina.fileanalyzer.dto.FileAnalysisResponseDto;
 import com.infina.fileanalyzer.entity.AnalysisResult;
 import com.infina.fileanalyzer.entity.ArchiveInfo;
 import com.infina.fileanalyzer.entity.FileStats;
+import com.infina.fileanalyzer.exception.file.FileAnalyzerException;
+import com.infina.fileanalyzer.exception.directory.DirectoryNotFoundException;
+import com.infina.fileanalyzer.exception.file.FileProcessingException;
 import com.infina.fileanalyzer.service.abstracts.IFileAnalysisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -39,12 +44,25 @@ public class FileAnalysisService implements IFileAnalysisService {
      * @param filePaths List of paths to the files to be processed
      * @param inputDirectory Directory containing the input files
      * @param outputZipPath Path where the output ZIP file will be created
-     * @return AnalysisResult containing the aggregated statistics of all processed files
+     * @return FileAnalysisResponseDto containing analysis results and archive information
+     * @throws DirectoryNotFoundException if input directory doesn't exist
+     * @throws FileProcessingException if an error occurs during file processing
      */
     @Override
     public FileAnalysisResponseDto processFile(List<Path> filePaths, String inputDirectory, String outputZipPath) {
         logger.info("Starting file processing for {} files from directory: {}", filePaths.size(), inputDirectory);
         LocalDateTime analysisStartTime = LocalDateTime.now();
+
+        // Validate input directory exists
+        Path inputDirPath = Paths.get(inputDirectory);
+        if (!Files.exists(inputDirPath)) {
+            throw new DirectoryNotFoundException("Input directory not found: " + inputDirectory);
+        }
+
+        // Validate file paths
+        if (filePaths == null || filePaths.isEmpty()) {
+            throw new FileProcessingException("No files provided for processing");
+        }
 
         try {
             // Submit file analysis tasks to thread pool
@@ -81,9 +99,12 @@ public class FileAnalysisService implements IFileAnalysisService {
 
             return responseDto;
 
+        } catch (FileAnalyzerException e) {
+            logger.error("File analyzer exception during processing", e);
+            throw e;
         } catch (Exception e) {
             logger.error("Error during file processing", e);
-            throw new RuntimeException("File processing failed", e);
+            throw new FileProcessingException("File processing failed: " + e.getMessage(), e);
         }
     }
 }
