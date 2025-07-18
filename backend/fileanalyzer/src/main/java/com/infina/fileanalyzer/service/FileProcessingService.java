@@ -2,6 +2,9 @@ package com.infina.fileanalyzer.service;
 
 import com.infina.fileanalyzer.entity.AnalysisResult;
 import com.infina.fileanalyzer.entity.FileStats;
+import com.infina.fileanalyzer.exception.file.FileNotFoundException;
+import com.infina.fileanalyzer.exception.file.FileProcessingException;
+import com.infina.fileanalyzer.exception.file.InvalidFileTypeException;
 import com.infina.fileanalyzer.service.abstracts.IFileProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.Callable;
+
 @Service
 public class FileProcessingService implements IFileProcessingService {
 
@@ -23,12 +27,23 @@ public class FileProcessingService implements IFileProcessingService {
      * Calculates the line and character count for the given file,
      * and returns processing information via FileStats.
      * Only .txt files are allowed.
+     *
+     * @param filePath Path to the file to analyze
+     * @return FileStats containing analysis results
+     * @throws InvalidFileTypeException if file is not a .txt file
+     * @throws FileNotFoundException    if file does not exist
+     * @throws FileProcessingException  if an error occurs during file processing
      */
-    public FileStats analyzeFile(Path filePath) throws IOException {
+    public FileStats analyzeFile(Path filePath) {
+        // Check if file exists
+        if (!Files.exists(filePath)) {
+            throw new FileNotFoundException("File does not exist: " + filePath);
+        }
+
         // Extension check: Only .txt files are processed.
         String fileName = filePath.getFileName().toString();
         if (!fileName.toLowerCase().endsWith(".txt")) {
-            throw new IllegalArgumentException("Only .txt files can be analyzed.");
+            throw new InvalidFileTypeException("Only .txt files can be analyzed. Found: " + fileName);
         }
 
         FileStats stats = new FileStats();
@@ -50,15 +65,23 @@ public class FileProcessingService implements IFileProcessingService {
     }
 
     // Calculates the line count of the file
-    private int countLines(Path filePath) throws IOException {
+    private int countLines(Path filePath) {
         try (var lines = Files.lines(filePath)) {
             return (int) lines.count();
+        } catch (IOException e) {
+            logger.error("Error counting lines in file: {}", filePath, e);
+            throw new FileProcessingException("Failed to count lines in file: " + filePath, e);
         }
     }
 
     // Calculates the total character count of the file
-    private int countCharacters(Path filePath) throws IOException {
-        return Files.readString(filePath).length();
+    private int countCharacters(Path filePath) {
+        try {
+            return Files.readString(filePath).length();
+        } catch (IOException e) {
+            logger.error("Error counting characters in file: {}", filePath, e);
+            throw new FileProcessingException("Failed to count characters in file: " + filePath, e);
+        }
     }
 
     // Can be used to run with thread pools
@@ -71,7 +94,7 @@ public class FileProcessingService implements IFileProcessingService {
      * Calculates the total analysis result from individual file statistics.
      * This method aggregates all individual results into a comprehensive summary.
      *
-     * @param fileStatsList List of individual file analysis results
+     * @param fileStatsList     List of individual file analysis results
      * @param analysisStartTime Start time of the overall analysis process
      * @return AnalysisResult containing aggregated statistics
      */

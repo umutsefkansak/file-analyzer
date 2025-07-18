@@ -3,6 +3,8 @@ package com.infina.fileanalyzer.service;
 import com.infina.fileanalyzer.entity.AnalysisResult;
 import com.infina.fileanalyzer.entity.ArchiveInfo;
 import com.infina.fileanalyzer.entity.FileStats;
+import com.infina.fileanalyzer.exception.thread.ThreadExecutionException;
+import com.infina.fileanalyzer.exception.thread.ThreadInterruptedException;
 import com.infina.fileanalyzer.service.abstracts.IThreadManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +52,8 @@ public class ThreadManagementService implements IThreadManagementService {
      *
      * @param filePaths List of file paths to analyze
      * @return List of Future objects for tracking completion
+     * @throws ThreadExecutionException if task submission fails
+     * @throws ThreadInterruptedException if thread is interrupted during execution
      */
     public List<Future<FileStats>> submitFileAnalysisTasks(List<Path> filePaths) {
         logger.info("Starting file analysis task submission for {} files", filePaths.size());
@@ -86,7 +90,7 @@ public class ThreadManagementService implements IThreadManagementService {
         } catch (InterruptedException e) {
             logger.error("File analysis task submission was interrupted", e);
             Thread.currentThread().interrupt();
-            throw new RuntimeException("File analysis task submission failed", e);
+            throw new ThreadInterruptedException("File analysis task submission was interrupted", e);
         }
 
         return futures;
@@ -100,6 +104,7 @@ public class ThreadManagementService implements IThreadManagementService {
      * @param outputZipPath Path where the ZIP file will be created
      * @param deleteSourceFiles Whether to delete source files after archiving
      * @return Future object for tracking completion
+     * @throws ThreadExecutionException if task submission fails
      */
     public Future<ArchiveInfo> submitArchiveTask(String inputDirectory, String outputZipPath, boolean deleteSourceFiles) {
         logger.info("Starting archive task submission for directory: {}", inputDirectory);
@@ -143,7 +148,7 @@ public class ThreadManagementService implements IThreadManagementService {
 
         } catch (Exception e) {
             logger.error("Archive task submission failed", e);
-            throw new RuntimeException("Archive task submission failed", e);
+            throw new ThreadExecutionException("Archive task submission failed", e);
         }
 
         return future;
@@ -156,6 +161,7 @@ public class ThreadManagementService implements IThreadManagementService {
      * @param fileStatsList List of individual file analysis results
      * @param analysisStartTime Start time of the overall analysis process
      * @return Future object for tracking completion
+     * @throws ThreadExecutionException if task submission fails
      */
     public Future<AnalysisResult> submitTotalResultCalculationTask(List<FileStats> fileStatsList, LocalDateTime analysisStartTime) {
         logger.info("Starting total result calculation task submission for {} files", fileStatsList.size());
@@ -185,7 +191,7 @@ public class ThreadManagementService implements IThreadManagementService {
 
         } catch (Exception e) {
             logger.error("Total result calculation task submission failed", e);
-            throw new RuntimeException("Total result calculation task submission failed", e);
+            throw new ThreadExecutionException("Total result calculation task submission failed", e);
         }
 
         return future;
@@ -198,6 +204,8 @@ public class ThreadManagementService implements IThreadManagementService {
      *
      * @param calculationFuture Future object from total result calculation task
      * @return AnalysisResult containing aggregated statistics
+     * @throws ThreadInterruptedException if thread is interrupted during wait
+     * @throws ThreadExecutionException if execution fails
      */
     public AnalysisResult waitForTotalResultCalculation(Future<AnalysisResult> calculationFuture) {
         logger.info("Waiting for total result calculation completion");
@@ -225,10 +233,10 @@ public class ThreadManagementService implements IThreadManagementService {
         } catch (InterruptedException e) {
             logger.error("Total result calculation was interrupted", e);
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Total result calculation was interrupted", e);
+            throw new ThreadInterruptedException("Total result calculation was interrupted", e);
         } catch (ExecutionException e) {
             logger.error("Total result calculation failed during execution", e);
-            throw new RuntimeException("Total result calculation execution failed", e);
+            throw new ThreadExecutionException("Total result calculation execution failed", e);
         }
 
         return result;
@@ -240,6 +248,8 @@ public class ThreadManagementService implements IThreadManagementService {
      *
      * @param futures List of Future objects from file analysis tasks
      * @return List of FileStats results
+     * @throws ThreadInterruptedException if thread is interrupted during wait
+     * @throws ThreadExecutionException if execution fails
      */
     public List<FileStats> waitForAnalysisCompletion(List<Future<FileStats>> futures) {
         logger.info("Waiting for completion of {} file analysis tasks", futures.size());
@@ -266,9 +276,11 @@ public class ThreadManagementService implements IThreadManagementService {
                 logger.error("Analysis task {} was interrupted", i + 1, e);
                 Thread.currentThread().interrupt();
                 failedCount++;
+                throw new ThreadInterruptedException("Analysis task was interrupted", e);
             } catch (ExecutionException e) {
                 logger.error("Analysis task {} failed during execution", i + 1, e);
                 failedCount++;
+                throw new ThreadExecutionException("Analysis task execution failed", e);
             }
         }
 
@@ -292,6 +304,8 @@ public class ThreadManagementService implements IThreadManagementService {
      *
      * @param archiveFuture Future object from archive task
      * @return ArchiveInfo result
+     * @throws ThreadInterruptedException if thread is interrupted during wait
+     * @throws ThreadExecutionException if execution fails
      */
     public ArchiveInfo waitForArchiveCompletion(Future<ArchiveInfo> archiveFuture) {
         logger.info("Waiting for archive task completion");
@@ -320,10 +334,10 @@ public class ThreadManagementService implements IThreadManagementService {
         } catch (InterruptedException e) {
             logger.error("Archive task was interrupted", e);
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Archive task was interrupted", e);
+            throw new ThreadInterruptedException("Archive task was interrupted", e);
         } catch (ExecutionException e) {
             logger.error("Archive task failed during execution", e);
-            throw new RuntimeException("Archive task execution failed", e);
+            throw new ThreadExecutionException("Archive task execution failed", e);
         }
 
         return result;
@@ -376,6 +390,8 @@ public class ThreadManagementService implements IThreadManagementService {
     /**
      * Shuts down thread pools gracefully.
      * Should be called when application is shutting down.
+     *
+     * @throws ThreadInterruptedException if shutdown is interrupted
      */
     public void shutdown() {
         logger.info("Shutting down thread pools...");
@@ -399,11 +415,12 @@ public class ThreadManagementService implements IThreadManagementService {
                 logger.warn("General thread pool did not terminate gracefully, forcing shutdown");
                 generalExecutor.shutdownNow();
             }
-
-            logger.info("Thread pools shut down successfully");
         } catch (InterruptedException e) {
             logger.error("Thread pool shutdown was interrupted", e);
             Thread.currentThread().interrupt();
+            throw new ThreadInterruptedException("Thread pool shutdown was interrupted", e);
         }
+
+        logger.info("All thread pools have been shut down");
     }
 }
