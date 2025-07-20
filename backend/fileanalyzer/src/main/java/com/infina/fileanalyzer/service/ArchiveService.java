@@ -24,11 +24,37 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * ArchiveService class manages file archiving and extraction operations.
+ * This class is designed to be thread-safe and can work safely in multi-threaded environments.
+ * Main functionalities:
+ * - Compress .txt files from specified directory into ZIP archive
+ * - Extract ZIP archives to specified directory
+ * - Validate archive file integrity
+ * - Delete source files
+
+ */
 @Service
 public class ArchiveService implements IArchvieService {
 
     private static final Logger logger = LoggerFactory.getLogger(ArchiveService.class);
 
+    /**
+     * Compresses all .txt files from the specified directory into a ZIP archive.
+     * This method performs the following operations:
+     * 1. Validates the existence of the input directory
+     * 2. Finds all .txt files in the directory
+     * 3. Creates output directory if necessary
+     * 4. Compresses files in ZIP format
+     * 5. Records and returns archive information
+     *
+     * @param inputDirectory Directory containing .txt files to be archived
+     * @param outputZipPath Full path of the ZIP file to be created
+     * @return ArchiveInfo Object containing detailed information about the archiving process
+     * @throws DirectoryNotFoundException If input directory is not found
+     * @throws DirectoryAccessException If directory access error occurs
+     * @throws ArchiveCreationException If ZIP creation error occurs
+     */
     public ArchiveInfo createArchive(String inputDirectory, String outputZipPath){
         ArchiveInfo archiveInfo = new ArchiveInfo();
         List<String> archivedFileNames = new ArrayList<>();
@@ -93,6 +119,17 @@ public class ArchiveService implements IArchvieService {
         return archiveInfo;
     }
 
+    /**
+     * Finds all .txt files in the specified directory and returns them as a list.
+     * This method scans directory contents and returns only files with .txt extension.
+     * Uses DirectoryStream for directory access and automatically closes resources.
+     *
+     * @param inputDirectory Path of the directory to scan
+     * @return List<Path> List of Path objects for found .txt files
+     * @throws DirectoryNotFoundException If directory is not found
+     * @throws DirectoryAccessException If directory access error occurs
+     * @throws IOException If general I/O error occurs
+     */
     public List<Path> findTxtFiles(String inputDirectory) throws IOException {
         List<Path> txtFiles = new ArrayList<>();
         Path dirPath = Paths.get(inputDirectory);
@@ -116,6 +153,21 @@ public class ArchiveService implements IArchvieService {
         return txtFiles;
     }
 
+    /**
+     * Extracts ZIP archive to the specified directory.
+     * This method performs the following operations:
+     * 1. Validates the existence of the ZIP file
+     * 2. Validates the integrity of the ZIP file
+     * 3. Creates destination directory if necessary
+     * 4. Extracts ZIP contents to file system
+     *
+     * @param zipFilePath Path of the ZIP file to extract
+     * @param destDirectory Destination directory where files will be extracted
+     * @throws FileNotFoundException If ZIP file is not found
+     * @throws InvalidArchiveException If ZIP file is invalid or corrupted
+     * @throws DirectoryAccessException If directory creation error occurs
+     * @throws ArchiveExtractionException If extraction process error occurs
+     */
     public void unzip(String zipFilePath, String destDirectory) {
         File zipFile = new File(zipFilePath);
         if (!zipFile.exists()) {
@@ -155,6 +207,16 @@ public class ArchiveService implements IArchvieService {
         }
     }
 
+    /**
+     * Validates the integrity of a ZIP file.
+     * This method verifies that the file is actually a valid ZIP archive by:
+     * 1. Checking file size (must be at least 4 bytes)
+     * 2. Checking ZIP file signature (0x504B0304)
+     * 3. Testing ZIP structure with ZipInputStream
+     *
+     * @param file File to be validated
+     * @return boolean True if file is a valid ZIP archive, false otherwise
+     */
     private boolean isValidZipFile(File file) {
         try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             // Check ZIP file signature (first 4 bytes should be 0x504B0304)
@@ -179,6 +241,16 @@ public class ArchiveService implements IArchvieService {
         }
     }
 
+    /**
+     * Extracts a single file from ZIP archive.
+     * This method reads data from ZipInputStream and writes it to the specified location.
+     * Uses BufferedOutputStream for performance improvement with 4KB buffer size.
+     *
+     * @param zipInput ZipInputStream used to read the file
+     * @param filePath Full path where the file will be extracted
+     * @throws IOException If file writing error occurs
+     * @throws ArchiveExtractionException If extraction process error occurs
+     */
     private void extractFile(ZipInputStream zipInput, String filePath) throws IOException {
         int BUFFER_SIZE = 4096;
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(filePath))) {
@@ -192,6 +264,15 @@ public class ArchiveService implements IArchvieService {
         }
     }
 
+    /**
+     * Safely deletes specified files from the file system.
+     * This method performs safe file deletion:
+     * - Uses separate try-catch block for each file
+     * - Does not stop process on deletion error, continues with other files
+     * - Logs error conditions
+     *
+     * @param files List of Path objects for files to be deleted
+     */
     public void deleteSourceFiles(List<Path> files) {
         for (Path file : files) {
             try {
