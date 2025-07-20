@@ -11,11 +11,21 @@ const FileAnalyzerApp = () => {
     const [downloadUrl, setDownloadUrl] = useState(null);
 
 
+  
+
     const handleFileSelect = (event) => {
-        const files = Array.from(event.target.files);
+    const files = Array.from(event.target.files);
+    
+    if (uploadMode === 'multiple') {
+        setSelectedFiles(prevFiles => [...prevFiles, ...files]);
+    } else {
         setSelectedFiles(files);
-        setError(null);
-        setAnalysisResult(null);
+    }
+    
+    setError(null);
+    setAnalysisResult(null);
+    
+    event.target.value = '';
     };
 
     const handleDragOver = (event) => {
@@ -209,10 +219,10 @@ const FileAnalyzerApp = () => {
                                     onClick={clearFiles}
                                     className="btn btn-secondary"
                                     style={{
-                                        backgroundColor: '#0d6efd',
-                                        borderColor: '#0d6efd',
-                                        color: '#f8f9fa',
-                                        fontWeight: 'bold'
+
+                                        backgroundColor: '#dc3545',
+                                        borderColor: '#dc3545',
+                                        color: 'white'
                                     }}
                                 >
                                     Temizle
