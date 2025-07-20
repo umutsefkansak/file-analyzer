@@ -16,9 +16,9 @@ Bu projeyi çalıştırmak için sisteminizde aşağıdaki yazılımların kurul
 
 • Maven 3.6 veya üzeri sürüm
 
-• Spring Boot 3.x framework'ü
+• Spring Boot 3 ve üzeri sürüm
 
-• Git (projeyi klonlamak için)
+• Git
 
 ## Kurulum Adımları
 
