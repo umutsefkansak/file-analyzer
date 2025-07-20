@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, FileText, Clock, Archive, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import './Styles/FileAnalyzer.css'; // CSS dosyasını import ediyoruz
+import '../styles/FileAnalyzer.css';
 
 const FileAnalyzerApp = () => {
     const [selectedFiles, setSelectedFiles] = useState([]);
