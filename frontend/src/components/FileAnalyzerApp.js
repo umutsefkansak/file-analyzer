@@ -208,6 +208,12 @@ const FileAnalyzerApp = () => {
                                 <button
                                     onClick={clearFiles}
                                     className="btn btn-secondary"
+                                    style={{
+                                        backgroundColor: '#0d6efd',
+                                        borderColor: '#0d6efd',
+                                        color: '#f8f9fa',
+                                        fontWeight: 'bold'
+                                    }}
                                 >
                                     Temizle
                                 </button>
