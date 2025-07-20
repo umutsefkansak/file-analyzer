@@ -12,13 +12,13 @@ Analiz işlemi tamamlandıktan sonra, sistem işlenen dosyaları ZIP arşivine d
 
 Bu projeyi çalıştırmak için sisteminizde aşağıdaki yazılımların kurulu olması gerekmektedir:
 
-• Java 17 veya üzeri sürüm
+• Java 17 veya üzeri sürüm.
 
-• Maven 3.6 veya üzeri sürüm
+• Maven 3.6 veya üzeri sürüm.
 
-• Spring Boot 3 ve üzeri sürüm
+• Spring Boot 3 ve üzeri sürüm.
 
-• Git
+• Git.
 
 ## Kurulum Adımları
 
@@ -43,21 +43,21 @@ Uygulama çalıştıktan sonra aşağıdaki API endpoint'lerini kullanabilirsini
 
 ### Dosya Analizi Endpoint'leri:
 
-• `POST /api/v1/files/analyze` - Mevcut dizindeki tüm .txt dosyalarını analiz eder
+• `POST /api/v1/files/analyze` - Mevcut dizindeki tüm .txt dosyalarını analiz eder.
 
-• `POST /api/v1/files/upload-and-analyze` - Tek dosya yükler ve analiz eder
+• `POST /api/v1/files/upload-and-analyze` - Tek dosya yükler ve analiz eder.
 
-• `POST /api/v1/files/upload-multiple-and-analyze` - Çoklu dosya yükler ve analiz eder
+• `POST /api/v1/files/upload-multiple-and-analyze` - Çoklu dosya yükler ve analiz eder.
 
 ### Arşiv İşlemleri:
 
-• `POST /api/v1/files/unzip` - ZIP dosyasını çıkarır
+• `POST /api/v1/files/unzip` - ZIP dosyasını çıkarır.
 
-• `GET /api/v1/files/download/{filename}` - Dosya indirir
+• `GET /api/v1/files/download/{filename}` - Dosya indirir.
 
 ### Sistem Endpoint'leri:
 
-• `GET /api/v1/files/config` - Dizin konfigürasyonunu getirir
+• `GET /api/v1/files/config` - Dizin konfigürasyonunu getirir.
 
 # Örnek Çıktılar
 
@@ -90,27 +90,27 @@ Atalay Berk Çırak:
 
 * ArchiveService geliştirilmesi.
 
-* Hatalı branch isimlerinin düzeltilmesi
+* Hatalı branch isimlerinin düzeltilmesi.
 
-* Opsiyonel olan Unzip metodunun geliştirilmesi
+* Opsiyonel olan Unzip metodunun geliştirilmesi.
 
-* README.md dosyasının hazırlanması
+* README.md dosyasının hazırlanması.
 
 Barış Dalyan Emre:
 
-* Global Exception Handler
+* Global Exception Handler.
 
-* Geliştirilen service’lere Global Exception Handling entegrasyonu
+* Geliştirilen service’lere Global Exception Handling entegrasyonu.
 
-* FileAnalysisService geliştirilmesi
+* FileAnalysisService geliştirilmesi.
 
-* CoreFileAnalvsisService geliştirilmesi
+* CoreFileAnalvsisService geliştirilmesi.
 
 * Analiz işlemini yapacak Controller yazılması.
 
-* Controller için gerekli DTO’ların oluşturulması
+* Controller için gerekli DTO’ların oluşturulması.
 
-* Global ExceptionHandling entegrasyonunun devamı
+* Global ExceptionHandling entegrasyonunun devamı.
 
 Umut Sefkan Sak:
 
@@ -119,17 +119,17 @@ Umut Sefkan Sak:
 * ThreadConfig dosyasının oluşturulması, Entity sınıflarının oluşturulması, Paketlerin
 oluşturulması.
 
-* Tespit edilen eksiklerin giderilmesi (eksik anotasyon, metot, interface vs.)
+* Tespit edilen eksiklerin giderilmesi (eksik anotasyon, metot, interface vs.).
 
 * ThreadManagementService geliştirilmesi.
 
-* FileUploadService geliştirilmesi
+* FileUploadService geliştirilmesi.
+  
+* FileDownloadService geliştirilmesi.
 
-* FileDownloadService geliştirilmesi
+* FileUploadService ile ilgili endpointlerin eklenmesi.
 
-* FileUploadService ile ilgili endpointlerin eklenmesi
-
-* FileDownloadService ile ilgili endpointlerin eklenmesi
+* FileDownloadService ile ilgili endpointlerin eklenmesi.
 
 
 # Akış Şeması
