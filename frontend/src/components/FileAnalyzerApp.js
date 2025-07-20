@@ -219,6 +219,7 @@ const FileAnalyzerApp = () => {
                                     onClick={clearFiles}
                                     className="btn btn-secondary"
                                     style={{
+
                                         backgroundColor: '#dc3545',
                                         borderColor: '#dc3545',
                                         color: 'white'
